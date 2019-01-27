@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lost{% endblock %}
+
+{% form_theme form 'bootstrap_4_layout.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+
+    <style>
+        #map {
+            height: 180px;
+        }
+    </style>
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+          integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+          crossorigin=""/>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-Geolocation/1.0.50/jquery.geolocation.js"></script>
+    <script>
+        var marker;
+
+        function initMap() {
+            var map;
+
+            $.geolocation.getCurrentPosition(function (position) {
+                var pos = [
+                    position.coords.latitude,
+                    position.coords.longitude
+                ];
+
+                map = L.map('map').setView(pos, 13);
+                marker = L.marker(pos).addTo(map);
+                $('#form_where_latitude').val(position.coords.latitude);
+                $('#form_where_longitude').val(position.coords.longitude);
+
+                L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+                    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                    maxZoom: 18,
+                    id: 'mapbox.streets',
+                    accessToken: 'pk.eyJ1IjoiYW1pbmVieSIsImEiOiJjanIyazlyaDQxNWRrNDRxcTVjNG53cnJ4In0.rhjio7NdjP3UnK40CJsSVQ'
+                }).addTo(map);
+
+                map.on('click', function (event) {
+                    if (marker) {
+                        map.removeLayer(marker);
+                    }
+                    marker = L.marker([event.latlng.lat, event.latlng.lng]).addTo(map);
+
+                    $('#form_where_latitude').val(event.latlng.lat);
+                    $('#form_where_longitude').val(event.latlng.lng);
+                });
+            })
+        }
+
+        $(document).ready(initMap());
+    </script>
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+            integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+            crossorigin=""></script>
+{% endblock %}
+
+{% block body %}
+    {{ parent() }}
+
+    <div class="py-5 text-center">
+        <h2>Lost form</h2>
+        <p class="lead">Declare what you lost.</p>
+    </div>
+
+    <div id="map"></div>
+
+    {{ form_start(form) }}
+    {{ form_widget(form) }}
+    {{ form_end(form) }}
+{% endblock %}
