@@ -101,7 +101,7 @@ class RunAppCommand extends Command
         $setB = $tokenizer->tokenize($text2);
 
         $result = $similarity->similarity($setA, $setB);
-        if (intval($result) == 1) {
+        if ($result > 0.7) {
             return true;
         }
 
